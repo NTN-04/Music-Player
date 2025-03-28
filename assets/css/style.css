@@ -180,9 +180,9 @@ header h2 {
   cursor: pointer;
 }
 .control .btn:hover {
-  scale: 1.07;
+  scale: 1.05;
 }
-.control .btn:not(.btn-toggle-play):hover {
+.control .btn:not(.btn-toggle-play, .btn-random):hover {
   color: var(--active-color);
 }
 .control .btn-toggle-play {
@@ -195,6 +195,9 @@ header h2 {
   justify-content: center;
   color: #fff;
   font-size: 2.2rem;
+}
+.control .btn.active {
+  color: var(--active-color);
 }
 /* progress */
 .progress {
@@ -238,9 +241,14 @@ kéo trên thanh trượt (slider). */
   background-color: #fff;
   border-radius: 15px;
   box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: opacity 0.3s ease;
 }
 .song.active {
-  border: 2px solid var(--active-color);
+  border: 3px solid var(--active-color);
+}
+.song:active {
+  opacity: 0.8;
 }
 
 .song .thumb {
@@ -259,6 +267,7 @@ kéo trên thanh trượt (slider). */
   color: var(--text-color);
   font-size: 1.8rem;
 }
+.song .delete.active,
 .song.active .author,
 .song.active .title {
   color: var(--active-color);
@@ -274,7 +283,7 @@ kéo trên thanh trượt (slider). */
   cursor: pointer;
   transition: color 0.35s;
 }
-.song .delete.active,
+
 .song .btn-favorite.active {
   color: #ff0000;
 }
