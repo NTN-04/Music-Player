@@ -4,6 +4,7 @@ const $$ = document.querySelectorAll.bind(document);
 // Biến Hằng lưu trữ thông tin cấu hình trong localStorage
 const PLAYER_STORAGE_KEY = "Music_Player_NTN";
 // get element
+const background = $(".background img");
 const player = $(".player");
 const cd = $(".cd");
 const heading = $("header h2");
@@ -16,6 +17,14 @@ const nextBtn = $(".btn-next");
 const randomBtn = $(".btn-random");
 const repeatBtn = $(".btn-repeat");
 const playlist = $(".playlist");
+// get volume
+const volumeControl = $(".volume-control");
+const volumeIcon = $(".volume-icon");
+const volumeRange = $("#volume");
+
+// get option
+const optionMenu = $(".option-menu");
+const optionIcon = $(".option-icon");
 
 // mãng chứa index bài hát đã random
 let randomArray = [];
@@ -25,6 +34,8 @@ const app = {
   isPlaying: false,
   isRandom: false,
   isRepeat: false,
+  favorites: [],
+
   config: JSON.parse(localStorage.getItem(PLAYER_STORAGE_KEY)) || {},
   setConfig: function (key, value) {
     this.config[key] = value;
@@ -72,6 +83,7 @@ const app = {
   //   hiển thị all list song
   render: function () {
     const html = this.songs.map((song, index) => {
+      const isFavorited = this.favorites.includes(index);
       return `<div class="song ${
         index === this.currentIndex ? "active" : ""
       }" data-index =${index}>
@@ -83,10 +95,12 @@ const app = {
             <h3 class="title">${song.name}</h3>
             <p class="author">${song.singer}</p>
           </div>
-          <div class="btn-favorite">
+          <div class="btn-favorite ${
+            isFavorited ? "active" : ""
+          }" data-index=${index}>
             <i class="fas fa-heart"></i>
           </div>
-          <div class="delete">
+          <div class="delete" data-index=${index}>
             <i class="fas fa-trash"></i>
           </div>
         </div>`;
@@ -96,6 +110,29 @@ const app = {
 
   handleEvent: function () {
     const cdWidth = cd.offsetWidth;
+
+    // Xử lý nhấn phím space sẽ play / pause
+    document.onkeydown = function (e) {
+      // console.log(e);
+      e = e || window.Event;
+      if (e.key === " " && e.target === document.body) {
+        e.preventDefault();
+        if (app.isPlaying) {
+          audio.pause();
+        } else {
+          audio.play();
+        }
+      }
+    };
+    // Click ra ngoài đóng opening box
+    document.onclick = function (e) {
+      if (!e.target.closest(".option-icon")) {
+        optionMenu.style.display = null;
+      }
+      if (!e.target.closest(".volume-control")) {
+        volumeRange.style.display = null;
+      }
+    };
 
     // Xử lý quay đĩa nhạc (cdThumb)
     const cdThumAnimate = cdThumb.animate(
@@ -199,12 +236,41 @@ const app = {
     // lắng nghe sự kiện click vào song
     playlist.onclick = function (e) {
       const songNode = e.target.closest(".song:not(.active)");
-      if (songNode) {
+      const favoriteBtn = e.target.closest(".btn-favorite");
+      const deleteBtn = e.target.closest(".delete");
+      if (songNode && !favoriteBtn && !deleteBtn) {
+        // xử lý click vào bài hát thì play
         app.currentIndex = Number(songNode.dataset.index); // covert sang số
         app.loadCurrentSong();
         app.render();
         audio.play();
       }
+      if (favoriteBtn) {
+        // xử lý click vào like
+        const index = Number(favoriteBtn.dataset.index);
+        app.favoriteList(index);
+      }
+      if (deleteBtn) {
+        //  xử lý xóa bài hát
+        const index = Number(deleteBtn.dataset.index);
+        app.deleteSong(index);
+      }
+    };
+
+    // Xử lý click vào volume tăng / giảm
+    volumeIcon.onclick = function () {
+      volume.style.display = !Boolean(volume.style.display) ? "block" : null;
+    };
+    volumeRange.oninput = function (e) {
+      audio.volume = e.target.value / 100;
+      app.setConfig("volume", e.target.value);
+    };
+
+    // click vào option icon
+    optionIcon.onclick = function () {
+      optionMenu.style.display = !Boolean(optionMenu.style.display)
+        ? "block"
+        : null;
     };
   },
   deFindProperties: function () {
@@ -218,7 +284,7 @@ const app = {
     setTimeout(() => {
       $(".song.active").scrollIntoView({
         behavior: "smooth",
-        block: "center",
+        block: "end",
         inline: "nearest",
       });
     }, 300);
@@ -226,6 +292,7 @@ const app = {
   loadCurrentSong: function () {
     heading.textContent = this.currentSong.name;
     cdThumb.style.backgroundImage = `url(${this.currentSong.image})`;
+    background.src = this.currentSong.image;
     audio.src = this.currentSong.path;
 
     this.scrollToActiveSong();
@@ -233,6 +300,11 @@ const app = {
   loadConfig: function () {
     this.isRandom = this.config.isRandom || false;
     this.isRepeat = this.config.isRepeat || false;
+    // load volume
+    audio.volume = (this.config.volume || 50) / 100;
+    volumeRange.value = this.config.volume || 50;
+    // load favorite
+    this.favorites = this.config.favorites || [];
   },
   prevSong: function () {
     this.currentIndex--;
@@ -270,6 +342,38 @@ const app = {
 
     // thêm index mới vào mãng
     randomArray.push(newIndex);
+  },
+  favoriteList: function (indexSong) {
+    const isFavorited = this.favorites.includes(indexSong);
+    if (isFavorited) {
+      // xóa bài hát khỏi ds
+      // tạo một mảng mới, chỉ chứa các bài hát không có chỉ số là indexSong .
+      this.favorites = this.favorites.filter((song) => song !== indexSong);
+    } else {
+      this.favorites.push(indexSong);
+    }
+
+    this.setConfig("favorites", this.favorites);
+    this.render();
+  },
+  deleteSong: function (indexSong) {
+    if (confirm("Bạn có chắc muốn xóa bài hát này chứ!")) {
+      this.songs.splice(indexSong, 1);
+      this.favorites = this.favorites.filter((fav) => fav !== indexSong);
+      this.favorites = this.favorites.map((fav) =>
+        fav > indexSong ? fav - 1 : fav
+      );
+      if (this.currentIndex === indexSong) {
+        this.currentIndex = this.currentIndex > 0 ? this.currentIndex - 1 : 0;
+        this.loadCurrentSong();
+      } else if (this.currentIndex > indexSong) {
+        this.currentIndex--;
+      }
+
+      this.setConfig("newSongs", this.songs);
+      this.setConfig("favorites", this.favorites);
+      this.render();
+    }
   },
   start: function () {
     // Gán cấu hình vào ứng dựng

@@ -66,7 +66,7 @@ header {
 }
 header h4 {
   color: var(--primary-color);
-  font-size: 1.6rem;
+  font-size: 1.4rem;
 }
 
 /* ================== song info ============  */
@@ -100,11 +100,8 @@ header h2 {
   height: 8px;
   transform: rotate(-90deg);
   accent-color: var(--primary-color);
-  /* background: #666; */
-  outline: none;
   cursor: pointer;
-  opacity: 0;
-  visibility: hidden;
+  display: none;
   transition: opacity 0.3s linear, accent-color 0.5s ease;
 }
 .volume:active {
@@ -116,8 +113,7 @@ header h2 {
 }
 
 .volume-control.active .volume {
-  opacity: 1;
-  visibility: visible;
+  display: block;
 }
 /* ========== option =============== */
 .option {
@@ -147,9 +143,6 @@ header h2 {
 }
 .option .item:hover {
   color: var(--active-color);
-}
-.option .option-menu.active {
-  display: block;
 }
 
 .cd {
@@ -182,7 +175,7 @@ header h2 {
 .control .btn:hover {
   scale: 1.05;
 }
-.control .btn:not(.btn-toggle-play, .btn-random):hover {
+.control .btn:not(.btn-toggle-play, .btn-random, .btn-repeat):hover {
   color: var(--active-color);
 }
 .control .btn-toggle-play {
@@ -245,7 +238,8 @@ kéo trên thanh trượt (slider). */
   transition: opacity 0.3s ease;
 }
 .song.active {
-  border: 3px solid var(--active-color);
+  /* border: 3px solid var(--active-color); */
+  background-color: var(--primary-color);
 }
 .song:active {
   opacity: 0.8;
@@ -267,10 +261,10 @@ kéo trên thanh trượt (slider). */
   color: var(--text-color);
   font-size: 1.8rem;
 }
-.song .delete.active,
+
 .song.active .author,
 .song.active .title {
-  color: var(--active-color);
+  color: #fff;
 }
 .song .author {
   color: #999;
@@ -279,18 +273,21 @@ kéo trên thanh trượt (slider). */
 .song .btn-favorite {
   padding: 16px 8px;
   font-size: 2rem;
-  color: #999;
+  color: #aeaeae;
   cursor: pointer;
   transition: color 0.35s;
 }
 
+.song .delete:hover {
+  color: var(--active-color);
+}
 .song .btn-favorite.active {
   color: #ff0000;
 }
 .song .delete {
   padding: 16px 8px;
   font-size: 2rem;
-  color: #999;
+  color: #aeaeae;
   cursor: pointer;
   transition: color 0.35s;
 }
