@@ -17,6 +17,8 @@ const nextBtn = $(".btn-next");
 const randomBtn = $(".btn-random");
 const repeatBtn = $(".btn-repeat");
 const playlist = $(".playlist");
+const restoreBtn = $(".restore-song");
+
 // get volume
 const volumeControl = $(".volume-control");
 const volumeIcon = $(".volume-icon");
@@ -25,6 +27,10 @@ const volumeRange = $("#volume");
 // get option
 const optionMenu = $(".option-menu");
 const optionIcon = $(".option-icon");
+// get favorite list
+const favoriteToggle = $(".favorite-toggle");
+// get Dark mode
+const darkModeToggle = $(".dark-mode-toggle");
 
 // mãng chứa index bài hát đã random
 let randomArray = [];
@@ -34,7 +40,9 @@ const app = {
   isPlaying: false,
   isRandom: false,
   isRepeat: false,
+  isShowingFavorite: false, // ds yêu thích đang đc hiện thị = false
   favorites: [],
+  deleteSongs: [], // ds bài hát đã xóa
 
   config: JSON.parse(localStorage.getItem(PLAYER_STORAGE_KEY)) || {},
   setConfig: function (key, value) {
@@ -81,8 +89,11 @@ const app = {
     },
   ],
   //   hiển thị all list song
-  render: function () {
-    const html = this.songs.map((song, index) => {
+  render: function (songs = this.songs) {
+    const displaySongs = this.isShowingFavorite
+      ? this.songs.filter((_, index) => this.favorites.includes(index))
+      : songs;
+    const html = displaySongs.map((song, index) => {
       const isFavorited = this.favorites.includes(index);
       return `<div class="song ${
         index === this.currentIndex ? "active" : ""
@@ -126,8 +137,14 @@ const app = {
     };
     // Click ra ngoài đóng opening box
     document.onclick = function (e) {
+      const clickFavorite = e.target.closest(".favorite-toggle");
+      const clickDarkMode = e.target.closest(".option-menu .dark-mode-toggle");
       if (!e.target.closest(".option-icon")) {
-        optionMenu.style.display = null;
+        if (clickFavorite || clickDarkMode) {
+          optionMenu.style.display = "block";
+        } else {
+          optionMenu.style.display = null;
+        }
       }
       if (!e.target.closest(".volume-control")) {
         volumeRange.style.display = null;
@@ -272,6 +289,27 @@ const app = {
         ? "block"
         : null;
     };
+    // click vào favorite trong option menu
+    favoriteToggle.onclick = function () {
+      app.isShowingFavorite = !app.isShowingFavorite;
+      favoriteToggle.classList.toggle("active", app.isShowingFavorite);
+      app.render();
+    };
+
+    // click vào dark mode trong option menu
+    darkModeToggle.onclick = function () {
+      document.body.classList.toggle("dark");
+      const isDark = document.body.classList.contains("dark");
+      app.setConfig("isDark", isDark);
+      darkModeToggle.innerHTML = isDark
+        ? `<i class="fa-regular fa-sun" style="color: #f7d202"></i><span style="color: #f7d202;font-size: 16px; margin-left: 8px">Light Mode</span>`
+        : `<i class="fas fa-moon"></i><span style="font-size: 16px; margin-left: 8px">Dark Mode</span>`;
+    };
+
+    // xử lý khôi phục bài hát bị xóa
+    restoreBtn.onclick = function () {
+      app.restoreSong();
+    };
   },
   deFindProperties: function () {
     Object.defineProperty(this, "currentSong", {
@@ -300,11 +338,21 @@ const app = {
   loadConfig: function () {
     this.isRandom = this.config.isRandom || false;
     this.isRepeat = this.config.isRepeat || false;
+    // load lại ds bài hát khi xóa
+    this.songs = this.config.newSongs || this.songs;
+    // load ds song đã xóa
+    this.deleteSongs = this.config.deleteSongs || [];
     // load volume
     audio.volume = (this.config.volume || 50) / 100;
     volumeRange.value = this.config.volume || 50;
     // load favorite
     this.favorites = this.config.favorites || [];
+    // load isDark
+    if (this.config.isDark) {
+      document.body.classList.add("dark");
+      darkModeToggle.innerHTML = `<i class="fa-regular fa-sun" style="color: #f7d202"></i>
+      <span style="color: #f7d202;font-size: 16px; margin-left: 8px">Light Mode</span>`;
+    }
   },
   prevSong: function () {
     this.currentIndex--;
@@ -357,23 +405,45 @@ const app = {
     this.render();
   },
   deleteSong: function (indexSong) {
-    if (confirm("Bạn có chắc muốn xóa bài hát này chứ!")) {
+    if (confirm("Bạn có chắc muốn xóa bài hát này chứ ?")) {
+      // lưu bài hát đã xóa
+      let deleteSong = this.songs[indexSong];
+      this.deleteSongs.push(deleteSong);
+
+      // xóa bài hát trong ds
       this.songs.splice(indexSong, 1);
       this.favorites = this.favorites.filter((fav) => fav !== indexSong);
       this.favorites = this.favorites.map((fav) =>
         fav > indexSong ? fav - 1 : fav
       );
+      // nếu index hiện tại = index xóa, mà id hiện tại > 0 => id hiện tại giảm 1, ngược lại = 0
       if (this.currentIndex === indexSong) {
         this.currentIndex = this.currentIndex > 0 ? this.currentIndex - 1 : 0;
         this.loadCurrentSong();
-      } else if (this.currentIndex > indexSong) {
+      }
+      // nếu index hiện tại nằm sau index xóa => index hiện tại giảm 1
+      else if (this.currentIndex > indexSong) {
         this.currentIndex--;
       }
 
       this.setConfig("newSongs", this.songs);
       this.setConfig("favorites", this.favorites);
+      this.setConfig("deleteSongs", this.deleteSongs);
       this.render();
     }
+  },
+  restoreSong: function () {
+    if (this.deleteSongs.length === 0) {
+      alert("Không có bài hát để khôi phục!");
+      return;
+    }
+
+    let restoreSong = this.deleteSongs.pop();
+    this.songs.push(restoreSong);
+
+    this.setConfig("newSongs", this.songs);
+    this.setConfig("deleteSongs", this.deleteSongs);
+    this.render();
   },
   start: function () {
     // Gán cấu hình vào ứng dựng

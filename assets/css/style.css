@@ -27,6 +27,7 @@ body {
   top: -50%;
   left: -50%; */
   z-index: -1;
+  transition: opacity 0.35s linear;
 }
 .background img {
   min-width: 100%;
@@ -65,7 +66,10 @@ header {
   text-align: center;
 }
 header h4 {
-  color: var(--primary-color);
+  background: #00c9ff;
+  background: linear-gradient(to left, #00b09b, #96c93d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   font-size: 1.4rem;
 }
 
@@ -141,8 +145,15 @@ header h2 {
   padding: 5px 10px;
   cursor: pointer;
 }
+
 .option .item:hover {
   color: var(--active-color);
+}
+.favorite-toggle.active {
+  color: #ff0000;
+}
+.favorite-toggle.active:hover {
+  color: #ff0000;
 }
 
 .cd {
@@ -182,7 +193,8 @@ header h2 {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background-color: var(--primary-color);
+  background: var(--primary-color);
+  background: linear-gradient(to right, #00b09b, #96c93d);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -290,4 +302,58 @@ kéo trên thanh trượt (slider). */
   color: #aeaeae;
   cursor: pointer;
   transition: color 0.35s;
+}
+/* ====== Dark Mode ======= */
+body.dark {
+  --background-color-dark: #1a1a1a;
+  --background-item: #444444;
+  --text-color-dark: #fff;
+  --active-dark: #2168f6;
+}
+
+body.dark .background {
+  opacity: 0.9;
+  transition: opacity 0.35s linear;
+}
+.dark .dashboard,
+.dark .song:not(.active) {
+  background-color: var(--background-item);
+  transition: background-color 0.3s ease;
+}
+
+.dark .control .btn:not(.btn-toggle-play) {
+  color: #ccc;
+}
+.dark .control .btn.active {
+  color: var(--active-dark);
+}
+
+/* song */
+.dark .song-info h2,
+.dark .song .title {
+  color: var(--text-color-dark);
+}
+/* option menu */
+.dark .option-menu {
+  background-color: var(--background-color-dark);
+}
+.dark .volume-icon,
+.dark .option-icon,
+.dark .option .item {
+  color: #ebebeb;
+}
+.dark .option .item:hover {
+  color: var(--active-dark);
+}
+.dark .favorite-toggle.active {
+  color: #ff0000;
+}
+.dark .favorite-toggle.active:hover {
+  color: #ff0000;
+}
+
+.dark .progress::-webkit-slider-thumb {
+  background: #00c9ff;
+  background: -webkit-linear-gradient(to right, #92fe9d, #00c9ff);
+  background: linear-gradient(to right, #92fe9d, #00c9ff);
 }
