@@ -400,3 +400,41 @@ body.dark .background {
   background: -webkit-linear-gradient(to right, #92fe9d, #00c9ff);
   background: linear-gradient(to right, #92fe9d, #00c9ff);
 }
+
+/* ====================== Confirm message ======================================== */
+/* Tùy chỉnh màu chữ của tiêu đề */
+.sw-title {
+  font-size: 22px;
+  color: red; /* Màu chữ tiêu đề */
+  font-weight: bold;
+}
+
+/* Tùy chỉnh nội dung thông báo */
+.sw-text {
+  font-size: 18px;
+  color: #fff;
+}
+
+/* Tùy chỉnh nền và viền của popup */
+.sw-popup {
+  border-radius: 15px;
+  background: linear-gradient(to right, #12c2e9, #c471ed, #f64f59);
+  border: 1px solid #fff;
+}
+
+/* Tùy chỉnh nút Xóa */
+.sw-confirm-btn {
+  background-color: red !important;
+  border-radius: 8px;
+  font-size: 16px;
+  padding: 10px 30px;
+}
+
+/* Tùy chỉnh nút Hủy */
+.sw-cancel-btn {
+  background-color: blue !important;
+  border-radius: 8px;
+  font-size: 16px;
+  padding: 10px 30px;
+  margin-left: 20px;
+}

@@ -436,36 +436,56 @@ const app = {
     this.render();
   },
   deleteSong: function (indexSong) {
-    if (confirm("Bạn có chắc muốn xóa bài hát này chứ ?")) {
-      // lưu bài hát đã xóa
-      let deleteSong = this.songs[indexSong];
-      this.deleteSongs.push(deleteSong);
+    Swal.fire({
+      title: "Xác nhận xóa?",
+      text: "Bạn có chắc muốn xóa bài hát này không?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+      customClass: {
+        title: "sw-title",
+        text: "sw-text",
+        confirmButton: "sw-confirm-btn",
+        cancelButton: "sw-cancel-btn",
+        popup: "sw-popup",
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // lưu bài hát đã xóa
+        let deleteSong = this.songs[indexSong];
+        this.deleteSongs.push(deleteSong);
 
-      // xóa bài hát trong ds
-      this.songs.splice(indexSong, 1);
-      this.favorites = this.favorites.filter((fav) => fav !== indexSong);
-      this.favorites = this.favorites.map((fav) =>
-        fav > indexSong ? fav - 1 : fav
-      );
-      // nếu index hiện tại = index xóa, mà id hiện tại > 0 => id hiện tại giảm 1, ngược lại = 0
-      if (this.currentIndex === indexSong) {
-        this.currentIndex = this.currentIndex > 0 ? this.currentIndex - 1 : 0;
-        this.loadCurrentSong();
-      }
-      // nếu index hiện tại nằm sau index xóa => index hiện tại giảm 1
-      else if (this.currentIndex > indexSong) {
-        this.currentIndex--;
-      }
+        // xóa bài hát trong ds
+        this.songs.splice(indexSong, 1);
+        this.favorites = this.favorites.filter((fav) => fav !== indexSong);
+        this.favorites = this.favorites.map((fav) =>
+          fav > indexSong ? fav - 1 : fav
+        );
+        // nếu index hiện tại = index xóa, mà id hiện tại > 0 => id hiện tại giảm 1, ngược lại = 0
+        if (this.currentIndex === indexSong) {
+          this.currentIndex = this.currentIndex > 0 ? this.currentIndex - 1 : 0;
+          this.loadCurrentSong();
+        }
+        // nếu index hiện tại nằm sau index xóa => index hiện tại giảm 1
+        else if (this.currentIndex > indexSong) {
+          this.currentIndex--;
+        }
 
-      this.setConfig("newSongs", this.songs);
-      this.setConfig("favorites", this.favorites);
-      this.setConfig("deleteSongs", this.deleteSongs);
-      this.render();
-    }
+        this.setConfig("newSongs", this.songs);
+        this.setConfig("favorites", this.favorites);
+        this.setConfig("deleteSongs", this.deleteSongs);
+        this.render();
+
+        // Thông báo xóa thành công
+        Swal.fire("Đã xóa!", "Bài hát đã được xóa khỏi danh sách.", "success");
+      }
+    });
   },
   restoreSong: function () {
     if (this.deleteSongs.length === 0) {
-      alert("Không có bài hát để khôi phục!");
+      // Thông báo
+      Swal.fire("Lỗi!", "Không có bài hát để khôi phục.", "error");
       return;
     }
 
