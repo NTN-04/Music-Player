@@ -35,6 +35,14 @@ const darkModeToggle = $(".dark-mode-toggle");
 // mãng chứa index bài hát đã random
 let randomArray = [];
 
+// search
+const searchBtn = $(".search__btn");
+const searchInput = $(".search__input");
+searchBtn.onclick = function () {
+  this.parentElement.classList.toggle("open");
+  this.previousElementSibling.focus();
+};
+
 const app = {
   currentIndex: 0,
   isPlaying: false,
@@ -93,11 +101,15 @@ const app = {
     const displaySongs = this.isShowingFavorite
       ? this.songs.filter((_, index) => this.favorites.includes(index))
       : songs;
-    const html = displaySongs.map((song, index) => {
-      const isFavorited = this.favorites.includes(index);
+    const html = displaySongs.map((song) => {
+      // tạo 1 key orientIndex để lưu chỉ mục gốc
+      const orientIndex = this.songs.findIndex(
+        (s) => s.name === song.name && s.singer === song.singer
+      );
+      const isFavorited = this.favorites.includes(orientIndex);
       return `<div class="song ${
-        index === this.currentIndex ? "active" : ""
-      }" data-index =${index}>
+        orientIndex === this.currentIndex ? "active" : ""
+      }" data-index =${orientIndex}>
           <div
             class="thumb"
             style="background-image: url(${song.image})"
@@ -108,10 +120,10 @@ const app = {
           </div>
           <div class="btn-favorite ${
             isFavorited ? "active" : ""
-          }" data-index=${index}>
+          }" data-index=${orientIndex}>
             <i class="fas fa-heart"></i>
           </div>
-          <div class="delete" data-index=${index}>
+          <div class="delete" data-index=${orientIndex}>
             <i class="fas fa-trash"></i>
           </div>
         </div>`;
@@ -272,6 +284,25 @@ const app = {
         const index = Number(deleteBtn.dataset.index);
         app.deleteSong(index);
       }
+    };
+
+    // Xử lý search bar
+    searchInput.oninput = function (e) {
+      let searchKeyword = e.target.value.toLowerCase().trim();
+      let filteredSongs = app.songs
+        .map((song, index) => ({
+          ...song,
+          orientIndex: index,
+        }))
+        .filter(
+          (song) =>
+            song.name.toLowerCase().includes(searchKeyword) ||
+            song.singer.toLowerCase().includes(searchKeyword)
+        );
+
+      app.render(
+        filteredSongs.map((song) => ({ ...song, index: song.orientIndex }))
+      );
     };
 
     // Xử lý click vào volume tăng / giảm
@@ -445,6 +476,7 @@ const app = {
     this.setConfig("deleteSongs", this.deleteSongs);
     this.render();
   },
+
   start: function () {
     // Gán cấu hình vào ứng dựng
     this.loadConfig();
