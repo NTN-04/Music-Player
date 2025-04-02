@@ -150,9 +150,11 @@ const app = {
     // Click ra ngoài đóng opening box
     document.onclick = function (e) {
       const clickFavorite = e.target.closest(".favorite-toggle");
-      const clickDarkMode = e.target.closest(".option-menu .dark-mode-toggle");
+      const clickDarkMode =
+        e.target.closest(".dark-mode-moon ") ||
+        e.target.closest(".dark-mode-sun");
       if (!e.target.closest(".option-icon")) {
-        if (clickFavorite || clickDarkMode) {
+        if (clickDarkMode || clickFavorite) {
           optionMenu.style.display = "block";
         } else {
           optionMenu.style.display = null;
@@ -333,8 +335,8 @@ const app = {
       const isDark = document.body.classList.contains("dark");
       app.setConfig("isDark", isDark);
       darkModeToggle.innerHTML = isDark
-        ? `<i class="fa-regular fa-sun" style="color: #f7d202"></i><span style="color: #f7d202;font-size: 16px; margin-left: 8px">Light Mode</span>`
-        : `<i class="fas fa-moon"></i><span style="font-size: 16px; margin-left: 8px">Dark Mode</span>`;
+        ? `<i class="fa-regular fa-sun dark-mode-sun" style="color: #f7d202"></i><span style="color: #f7d202;font-size: 16px; margin-left: 8px">Light Mode</span>`
+        : `<i class="fas fa-moon dark-mode-moon"></i><span style="font-size: 16px; margin-left: 8px">Dark Mode</span>`;
     };
 
     // xử lý khôi phục bài hát bị xóa
